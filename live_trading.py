@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import time
 import datetime
 import json
@@ -84,6 +83,7 @@ def Get_Data():
     if len(open_position) == 0:
         position_volume = 0
         position_type = 'None'
+        position_price = '0'
     else:
         position_volume = 0
         for x in open_position:
