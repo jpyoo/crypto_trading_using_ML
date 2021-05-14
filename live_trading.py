@@ -154,13 +154,13 @@ def live_trading():
     status = Get_Status(data)
     if status == 0:
         post_message(myToken,"#notify","Time now : " + str(datetime.datetime.now()) + "Ready to Buy in 1 hour")
-        time.sleep(60*60*1)
+        time.sleep(60*30)
         price = Get_Price()
         api_limit_order('buy', str(price), format(data.volume/2, '.8f'), lev)
     if status == 21:
         post_message(myToken,"#notify","Second order activated")
         price = Get_Price()
-        api_limit_order2('buy', str(price*0.98), format(data.volume/2, '.8f'), lev)
+        api_limit_order2('buy', str(price*0.98), format(data.position_volume, '.8f'), lev)
         api_limit_order2('sell', str(price*1.02), format(data.position_volume, '.8f'), lev)
 
     return status
