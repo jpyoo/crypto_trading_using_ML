@@ -1,4 +1,3 @@
-import numpy as np
 import time
 import datetime
 import json
@@ -73,11 +72,11 @@ class Trading_Data():
         self.order_price = order_price
 
 def Get_Price():
-    price = np.array(api.query_public('OHLC', data = {'pair': 'ETHUSD'})['result']['XETHZUSD'])[-1,5]
+    price = api.query_public('OHLC', data = {'pair': 'ETHUSD'})['result']['XETHZUSD'])[-1][5]
     return float(price)
 # Get Data from Kraken API
 def Get_Data():
-    price = np.array(api.query_public('OHLC', data = {'pair': 'ETHUSD'})['result']['XETHZUSD'])[-1,5]
+    price = float(api.query_public('OHLC', data = {'pair': 'ETHUSD'})['result']['XETHZUSD'])[-1][5])
     volume = float(api.query_private('Balance')['result']['XETH'])*int(lev)
 
     open_position = api.query_private('OpenPositions')['result']
