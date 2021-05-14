@@ -76,7 +76,7 @@ def Get_Price():
     return float(price)
 # Get Data from Kraken API
 def Get_Data():
-    price = float(api.query_public('OHLC', data = {'pair': 'ETHUSD'})['result']['XETHZUSD'])[-1][5])
+    price = float(api.query_public('OHLC', data = {'pair': 'ETHUSD'})['result']['XETHZUSD'][-1][5])
     volume = float(api.query_private('Balance')['result']['XETH'])*int(lev)
 
     open_position = api.query_private('OpenPositions')['result']
