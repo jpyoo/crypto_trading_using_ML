@@ -52,8 +52,8 @@ def api_cancel_all_order(open_order):
             }
         )
 
-def api_cancel_last_order(open_order):
-    x =  list(open_order)[-1]
+def api_cancel_order(open_order, list_position):
+    x =  list(open_order)[list_position]
     api.query_private('CancelOrder',
         {
             'txid': x
@@ -61,7 +61,7 @@ def api_cancel_last_order(open_order):
     )
 
 class Trading_Data():
-    def __init__(self, price, volume, open_position, position_type, position_volume, open_order, order_type, position_price):
+    def __init__(self, price, volume, open_position, position_type, position_volume, open_order, order_type, position_price, order_price):
         self.price = price
         self.volume = volume
         self.open_position = open_position
@@ -70,6 +70,7 @@ class Trading_Data():
         self.open_order = open_order
         self.order_type = order_type
         self.position_price = position_price
+        self.order_price = order_price
 
 def Get_Price():
     price = np.array(api.query_public('OHLC', data = {'pair': 'ETHUSD'})['result']['XETHZUSD'])[-1,5]
@@ -96,8 +97,9 @@ def Get_Data():
         order_type = 'None'
     else:
         order_type = open_order[list(open_order)[-1]]['descr']['type']
+        order_price = open_order[list(open_order)[0]]['descr']['price']
 
-    return Trading_Data(price, volume, open_position, position_type, position_volume, open_order, order_type, position_price)
+    return Trading_Data(price, volume, open_position, position_type, position_volume, open_order, order_type, position_price, order_price)
 
 #Check older than 3 hours orders and cancel them
 def Clean_Old_Order(data):
@@ -107,7 +109,7 @@ def Clean_Old_Order(data):
 
     if len(data.open_order) == 2 and len(data.open_position) == 1:
         if int(data.open_order[list(data.open_order)[-1]]['opentm']) < int(time.time()) - (60*180):
-            api_cancel_last_order(data.open_order)
+            api_cancel_order(data.open_order,-1)
 
 #Get status of the trading, such as open positions, open orders and return ping status
 def Get_Status(data):
@@ -160,8 +162,10 @@ def live_trading():
     if status == 21:
         post_message(myToken,"#notify","Second order activated")
         price = Get_Price()
-        api_limit_order2('buy', str(price*0.98), format(data.position_volume, '.8f'), lev)
+        api_limit_order2('buy', str(price*0.98), format(data.volume/2, '.8f'), lev)
+        api_limit_order2('sell', data.order_price, format(data.volume/2, '.8f'), lev)
         api_limit_order2('sell', str(price*1.02), format(data.position_volume, '.8f'), lev)
+        api_cancel_order(data.open_order,0)
 
     return status
 
