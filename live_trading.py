@@ -72,7 +72,7 @@ class Trading_Data():
         self.order_price = order_price
 
 def Get_Price():
-    price = api.query_public('OHLC', data = {'pair': 'ETHUSD'})['result']['XETHZUSD'])[-1][5]
+    price = api.query_public('OHLC', data = {'pair': 'ETHUSD'})['result']['XETHZUSD'][-1][5]
     return float(price)
 # Get Data from Kraken API
 def Get_Data():
