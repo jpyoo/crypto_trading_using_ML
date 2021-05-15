@@ -45,6 +45,18 @@ def api_limit_order2(order_type, want_price, volume, leverage, previous_price):
                                 )
     return response
 
+def api_limit_order3(order_type, want_price, volume, leverage):
+    response = api.query_private('AddOrder',
+                                    {'pair': 'ETHUSD',
+                                     'type': order_type,
+                                     'ordertype': 'limit',
+                                     'price': format(want_price, '.2f'),
+                                     'volume': volume,
+                                     'leverage' : leverage
+                                     }
+                                )
+    return response
+
 def api_cancel_all_order(open_order):
     for x in list(open_order):
         api.query_private('CancelOrder',
@@ -165,7 +177,7 @@ def live_trading():
         price = Get_Price()
         api_cancel_order(data.open_order,0)
         api_limit_order2('buy', str(price*0.98), format(data.volume/2, '.8f'), lev, data.order_price)
-        api_limit_order2('sell', str(price*1.02), format(data.position_volume, '.8f'), lev)
+        api_limit_order3('sell', str(price*1.02), format(data.position_volume, '.8f'), lev)
 
     return status
 
