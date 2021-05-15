@@ -75,19 +75,16 @@ def api_cancel_order(open_order, list_position):
 
 class Trading_Data():
     def __init__(self, price, volume, open_position, position_type, position_volume, open_order, order_type, position_price, order_price):
-        self.price = price
-        self.volume = volume
+        self.price = float(price)
+        self.volume = float(volume)
         self.open_position = open_position
         self.position_type = position_type
-        self.position_volume = position_volume
+        self.position_volume = float(position_volume)
         self.open_order = open_order
         self.order_type = order_type
-        self.position_price = position_price
+        self.position_price = float(position_price)
         self.order_price = order_price
 
-def Get_Price():
-    price = api.query_public('OHLC', data = {'pair': 'ETHUSD'})['result']['XETHZUSD'][-1][5]
-    return float(price)
 # Get Data from Kraken API
 def Get_Data():
     price = float(api.query_public('OHLC', data = {'pair': 'ETHUSD'})['result']['XETHZUSD'][-1][5])
@@ -95,13 +92,11 @@ def Get_Data():
 
     open_position = api.query_private('OpenPositions')['result']
     if len(open_position) == 0:
-        position_volume = 0
         position_type = 'None'
         position_price = '0'
+        position_volume = '0'
     else:
-        position_volume = 0
-        for x in open_position:
-            position_volume += float(open_position[x]['vol'])
+        position_volume = open_position[list(open_position)[-1]]['vol']
         position_type = open_position[list(open_position)[-1]]['type']
         position_price = format(float(open_position[list(open_position)[0]]['cost'])/float(open_position[list(open_position)[0]]['vol']),'.2f')
 
@@ -118,7 +113,7 @@ def Get_Data():
 def Clean_Old_Order(data):
     if len(data.open_order) != 0 and len(data.open_position) == 0:
         if int(data.open_order[list(data.open_order)[-1]]['opentm']) < int(time.time()) - (60*180):
-            api_cancel_all_order(data.open_order)
+            api_cancel_order(data.open_order,0)
 
     if len(data.open_order) == 2 and len(data.open_position) == 1:
         if int(data.open_order[list(data.open_order)[-1]]['opentm']) < int(time.time()) - (60*180):
@@ -127,38 +122,14 @@ def Clean_Old_Order(data):
 #Get status of the trading, such as open positions, open orders and return ping status
 def Get_Status(data):
     if len(data.open_order) == 0 and len(data.open_position) == 0:
+        post_message(myToken,"#notify","Time now : " + str(datetime.datetime.now()) + "Ready to Buy in 1 hour")
+        time.sleep(60*30)
         ping = 0
     elif len(data.open_position) == 1 and len(data.open_order) == 1 and float(data.position_price) < float(data.price)*0.95:
+        post_message(myToken,"#notify","Second order activated")
         ping = 21
 
-    elif len(data.open_order) == 0 and len(data.open_position) != 0:
-        if data.position_type == 'buy':
-            ping = 1
-        elif data.position_type == 'sell':
-            ping = 2
-        else: ping = 'error1'
-
-    elif len(data.open_order) != 0 and len(data.open_position) == 0:
-        if data.order_type == 'buy':
-            ping = 44
-        elif data.order_type == 'sell':
-            ping = 55
-        else: ping = 'error2'
-
-    elif len(data.open_order) != 0 and len(data.open_position) != 0:
-            if data.position_type == 'buy':
-                if data.order_type == 'sell':
-                    ping = 88
-                elif data.order_type == 'buy':
-                    ping = 66
-            elif data.position_type == 'sell':
-                if data.order_type == 'sell':
-                    ping = 77
-                elif data.order_type == 'buy':
-                    ping = 99
-            else: ping = 'error3'
-
-    else: ping = 'error4'
+    else: ping = 'else'
 
     return ping
 
@@ -168,16 +139,12 @@ def live_trading():
     Clean_Old_Order(data)
     status = Get_Status(data)
     if status == 0:
-        post_message(myToken,"#notify","Time now : " + str(datetime.datetime.now()) + "Ready to Buy in 1 hour")
-        time.sleep(60*30)
-        price = Get_Price()
-        api_limit_order('buy', str(price), format(data.volume/2, '.8f'), lev)
+        api_limit_order('buy', str(data.price), format(data.volume/2, '.8f'), lev)
     if status == 21:
-        post_message(myToken,"#notify","Second order activated")
-        price = Get_Price()
         api_cancel_order(data.open_order,0)
-        api_limit_order2('buy', str(price*0.98), format(data.volume/2, '.8f'), lev, data.order_price)
-        api_limit_order3('sell', str(price*1.02), format(data.position_volume, '.8f'), lev)
+        api_limit_order3('buy', str(data.price*0.98), format(data.volume/2, '.8f'), lev)
+        api_limit_order3('sell', data.order_price, format(data.volume/2, '.8f'), lev)
+        api_limit_order3('sell', str(data.price*1.02), format(data.position_volume, '.8f'), lev)
 
     return status
 
