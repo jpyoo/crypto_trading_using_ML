@@ -128,7 +128,7 @@ def Clean_Old_Order(data):
 def Get_Status(data):
     if len(data.open_order) == 0 and len(data.open_position) == 0:
         ping = 0
-    elif len(data.open_position) == 1 and float(data.position_price) < float(data.price)*0.95:
+    elif len(data.open_position) == 1 and len(data.open_order) == 1 and float(data.position_price) < float(data.price)*0.95:
         ping = 21
 
     elif len(data.open_order) == 0 and len(data.open_position) != 0:
