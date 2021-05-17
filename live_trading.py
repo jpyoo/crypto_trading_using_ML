@@ -31,16 +31,16 @@ def api_limit_order(order_type, want_price, volume, leverage):
                                 )
     return response
 
-def api_limit_order2(order_type, want_price, volume, leverage, previous_price):
+def api_limit_order2(order_type, want_price, volume, leverage):
     response = api.query_private('AddOrder',
                                     {'pair': 'ETHUSD',
                                      'type': order_type,
                                      'ordertype': 'limit',
-                                     'price': format(want_price, '.2f'),
+                                     'price': format(float(want_price)*0.98, '.2f'),
                                      'volume': volume,
                                      'leverage' : leverage,
                                      'close[ordertype]': 'limit',
-                                     'close[price]': format(previous_price, '.2f')
+                                     'close[price]': format(float(want_price) * 1.02, '.2f')
                                     }
                                 )
     return response
@@ -142,18 +142,15 @@ def live_trading():
         api_limit_order('buy', str(data.price), format(data.volume/2, '.8f'), lev)
     if status == 21:
         api_cancel_order(data.open_order,0)
-        api_limit_order3('buy', data.price*0.98, format(data.volume/2, '.8f'), lev)
+        api_limit_order2('buy', data.price, format(data.volume/2, '.8f'), lev)
         api_limit_order3('sell', data.order_price, format(data.volume/2, '.8f'), lev)
-        api_limit_order3('sell', data.price*1.02, format(data.position_volume, '.8f'), lev)
 
     return status
 
 req_data = {'docalcs': 'true'}
 
 #run live trading every minute
-while True:
-    s = live_trading()
-    # Send a message to #general channel
-    slacker_msg = "Pinging"
-    post_message(myToken,"#notify",slacker_msg)
-    time.sleep(60)
+s = live_trading()
+# Send a message to #general channel
+slacker_msg = "Pinging"
+post_message(myToken,"#notify",slacker_msg)
