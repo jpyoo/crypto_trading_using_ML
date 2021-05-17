@@ -143,7 +143,7 @@ def live_trading():
     if status == 21:
         api_cancel_order(data.open_order,0)
         api_limit_order2('buy', data.price, format(data.volume/2, '.8f'), lev)
-        api_limit_order3('sell', data.order_price, format(data.volume/2, '.8f'), lev)
+        api_limit_order3('sell', data.order_price, format(data.position_volume, '.8f'), lev)
 
     return status
 
