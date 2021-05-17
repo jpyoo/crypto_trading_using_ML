@@ -83,7 +83,7 @@ class Trading_Data():
         self.open_order = open_order
         self.order_type = order_type
         self.position_price = float(position_price)
-        self.order_price = order_price
+        self.order_price = float(order_price)
 
 # Get Data from Kraken API
 def Get_Data():
@@ -142,9 +142,9 @@ def live_trading():
         api_limit_order('buy', str(data.price), format(data.volume/2, '.8f'), lev)
     if status == 21:
         api_cancel_order(data.open_order,0)
-        api_limit_order3('buy', str(data.price*0.98), format(data.volume/2, '.8f'), lev)
+        api_limit_order3('buy', data.price*0.98, format(data.volume/2, '.8f'), lev)
         api_limit_order3('sell', data.order_price, format(data.volume/2, '.8f'), lev)
-        api_limit_order3('sell', str(data.price*1.02), format(data.position_volume, '.8f'), lev)
+        api_limit_order3('sell', data.price*1.02, format(data.position_volume, '.8f'), lev)
 
     return status
 
