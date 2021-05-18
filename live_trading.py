@@ -31,16 +31,16 @@ def api_limit_order(order_type, want_price, volume, leverage):
                                 )
     return response
 
-def api_limit_order2(order_type, want_price, volume, leverage):
+def api_limit_order2(order_type, want_price, volume, leverage, op):
     response = api.query_private('AddOrder',
                                     {'pair': 'ETHUSD',
                                      'type': order_type,
                                      'ordertype': 'limit',
-                                     'price': format(float(want_price)*0.98, '.2f'),
+                                     'price': format(float(want_price), '.2f'),
                                      'volume': volume,
                                      'leverage' : leverage,
                                      'close[ordertype]': 'limit',
-                                     'close[price]': format(float(want_price) * 1.02, '.2f')
+                                     'close[price]': format(float(op), '.2f')
                                     }
                                 )
     return response
@@ -88,24 +88,30 @@ class Trading_Data():
 # Get Data from Kraken API
 def Get_Data():
     price = float(api.query_public('OHLC', data = {'pair': 'ETHUSD'})['result']['XETHZUSD'][-1][5])
+    time.sleep(1)
     volume = float(api.query_private('Balance')['result']['XETH'])*int(lev)
-
+    time.sleep(1)
     open_position = api.query_private('OpenPositions')['result']
+    time.sleep(1)
     if len(open_position) == 0:
         position_type = 'None'
         position_price = '0'
         position_volume = '0'
     else:
-        position_volume = open_position[list(open_position)[-1]]['vol']
+        position_volume = open_position[list(open_position)[0]]['vol']
         position_type = open_position[list(open_position)[-1]]['type']
         position_price = format(float(open_position[list(open_position)[0]]['cost'])/float(open_position[list(open_position)[0]]['vol']),'.2f')
 
     open_order = api.query_private('OpenOrders')['result']['open']
     if len(open_order) == 0:
         order_type = 'None'
-    else:
+    elif len(open_order) == 1:
         order_type = open_order[list(open_order)[-1]]['descr']['type']
         order_price = open_order[list(open_order)[0]]['descr']['price']
+    elif len(open_order) == 2:
+            order_type = open_order[list(open_order)[-1]]['descr']['type']
+            order_price = open_order[list(open_order)[0]]['descr']['price']
+            order_price2 = open_order[list(open_order)[1]]['descr']['price']
 
     return Trading_Data(price, volume, open_position, position_type, position_volume, open_order, order_type, position_price, order_price)
 
@@ -128,6 +134,9 @@ def Get_Status(data):
     elif len(data.open_position) == 1 and len(data.open_order) == 1 and float(data.position_price) < float(data.price)*0.95:
         post_message(myToken,"#notify","Second order activated")
         ping = 21
+    elif len(data.open_position) == 2 and len(data.open_order) == 2 and data.order_price == data.order_price2:
+        post_message(myToken,"#notify","Third order activated")
+        ping = 22
 
     else: ping = 'else'
 
@@ -141,9 +150,10 @@ def live_trading():
     if status == 0:
         api_limit_order('buy', str(data.price), format(data.volume/2, '.8f'), lev)
     if status == 21:
+        api_limit_order2('buy', data.price*0.98, format(data.volume/2, '.8f'), lev, data.order_price)
+    if status == 22:
         api_cancel_order(data.open_order,0)
-        api_limit_order2('buy', data.price, format(data.volume/2, '.8f'), lev)
-        api_limit_order3('sell', data.order_price, format(data.position_volume, '.8f'), lev)
+        api_limit_order3('sell', data.price*1.02, format(data.position_volume, '.8f'), lev)
 
     return status
 
