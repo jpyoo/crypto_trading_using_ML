@@ -127,7 +127,7 @@ def Clean_Old_Order(data):
 #Get status of the trading, such as open positions, open orders and return ping status
 def Get_Status(data):
     if len(data.open_order) == 0 and len(data.open_position) == 0:
-        post_message(myToken,"#notify","Time now : " + str(datetime.datetime.now()) + "Ready to Buy in 1 hour")
+        post_message(myToken,"#notify","Time now : " + str(datetime.datetime.now()) + "Ready to Buy")
         time.sleep(60*30)
         ping = 0
     elif len(data.open_position) == 1 and len(data.open_order) == 1 and float(data.position_price) < float(data.price)*0.95:
@@ -136,6 +136,9 @@ def Get_Status(data):
     elif len(data.open_position) == 2 and len(data.open_order) == 2 and data.order_price == data.order_price2:
         post_message(myToken,"#notify","Third order activated")
         ping = 22
+    elif data.order_price > data.price * 2:
+        post_message(myToken,"#notify","Exit activated")
+        ping = 99
 
     else: ping = 'else'
 
@@ -152,7 +155,14 @@ def live_trading():
         api_limit_order2('buy', data.price*0.98, format(data.volume/2, '.8f'), data.order_price)
     if status == 22:
         api_cancel_order(data.open_order,0)
+        post_message(myToken,"#notify","Cancelled First Order")
         api_limit_order3('sell', data.price*1.02, format(data.position_volume, '.8f'))
+        post_message(myToken,"#notify","Placed new Order")
+    if status == 99:
+        api_cancel_all_order(data.open_order)
+        post_message(myToken,"#notify","Cancelled ALL Order")
+        api_limit_order3('sell', data.price, format(data.position_volume, '.8f'))
+        post_message(myToken,"#notify","Sell Market")
 
     return status
 
