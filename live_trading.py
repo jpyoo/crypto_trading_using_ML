@@ -83,7 +83,7 @@ class Trading_Data():
 
 # Get Data from Kraken API
 def Get_Data():
-    price = float(api.query_public('OHLC', data = {'pair': 'ETHUSD'})['result']['XETHZUSD'][-1][5])
+    price = float(api.query_public('OHLC', data = {'pair': 'ETHUSD'})['result']['XETHZUSD'][-1][4])
     time.sleep(1)
     volume = float(api.query_private('Balance')['result']['XETH'])
     time.sleep(1)
@@ -117,10 +117,12 @@ def Get_Data():
 #Check older than 3 hours orders and cancel them
 def Clean_Old_Order(data):
     if len(data.open_order) != 0 and len(data.open_position) == 0:
+        post_message(myToken,"#notify","Open order pending")
         if int(data.open_order[list(data.open_order)[-1]]['opentm']) < int(time.time()) - (60*180):
             api_cancel_order(data.open_order,0)
 
     if len(data.open_order) == 2 and len(data.open_position) == 1:
+        post_message(myToken,"#notify","Open order and Open position pending")
         if int(data.open_order[list(data.open_order)[-1]]['opentm']) < int(time.time()) - (60*180):
             api_cancel_order(data.open_order,-1)
 
@@ -151,13 +153,15 @@ def live_trading():
     status = Get_Status(data)
     if status == 0:
         api_limit_order('buy', str(data.price), format(data.volume/2, '.8f'))
+        post_message(myToken,"#notify","Initiated Position Opening Order")
     if status == 21:
         api_limit_order2('buy', data.price*0.98, format(data.volume/2, '.8f'), data.order_price)
+        post_message(myToken,"#notify","Initiated Loss control, second order placed.")
     if status == 22:
         api_cancel_order(data.open_order,0)
         post_message(myToken,"#notify","Cancelled First Order")
         api_limit_order3('sell', data.price*1.02, format(data.position_volume, '.8f'))
-        post_message(myToken,"#notify","Placed new Order")
+        post_message(myToken,"#notify","Placed new Order,")
     if status == 99:
         api_cancel_all_order(data.open_order)
         post_message(myToken,"#notify","Cancelled ALL Order")
