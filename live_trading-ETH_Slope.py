@@ -239,7 +239,7 @@ def live_trading():
 
 # In[14]:
 
-for True:
+while True:
     live_trading()
     time.sleep(900)
 
