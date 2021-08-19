@@ -13,6 +13,7 @@ import krakenex
 import requests
 import cryptocompare
 from keras.models import load_model
+import schedule
 
 def post_message(token, channel, text):
     response = requests.post("https://slack.com/api/chat.postMessage",
@@ -94,7 +95,7 @@ def api_limit_order3(order_type, want_price, volume):
                                     {'pair': 'ETHUSD',
                                      'type': order_type,
                                      'ordertype': 'limit',
-                                     'price': format(want_price, '.2f'),
+                                     'price': format(float(want_price), '.2f'),
                                      'volume': volume
                                      }
                                 )
@@ -201,32 +202,32 @@ def live_trading():
 
     if signal == 'Buy':
         if status == 0:
-            api_limit_order3('buy', str(data.price), format(data.bank / data.price, '.8f'))
+            api_limit_order3('buy', data.price, format(data.bank / data.price, '.8f'))
         elif status == 44:
             api_cancel_all_order(data.open_order)
-            api_limit_order3('buy', str(data.price), format(data.bank / data.price, '.8f'))
+            api_limit_order3('buy', data.price, format(data.bank / data.price, '.8f'))
         elif status == 77:
             api_cancel_all_order(data.open_order)
-            api_limit_order3('buy', str(data.price), format(data.bank / data.price, '.8f'))
+            api_limit_order3('buy', data.price, format(data.bank / data.price, '.8f'))
         elif status == 111:
-            api_limit_order3('buy', str(data.price), format(data.bank / data.price, '.8f'))
+            api_limit_order3('buy', data.price, format(data.bank / data.price, '.8f'))
         elif status == 444:
             api_cancel_all_order(data.open_order)
-            api_limit_order3('buy', str(data.price), format(data.bank / data.price, '.8f'))
+            api_limit_order3('buy', data.price, format(data.bank / data.price, '.8f'))
         elif status == 777:
             api_cancel_all_order(data.open_order)
-            api_limit_order3('buy', str(data.price), format(data.bank / data.price, '.8f'))
+            api_limit_order3('buy', data.price, format(data.bank / data.price, '.8f'))
         else: post_message(myToken,"#notify","Error6")
 
     elif signal == 'Sell':
         if status == 0:
-            api_limit_order3('sell', str(data.price), format(data.volume, '.8f'))
+            api_limit_order3('sell', data.price, format(data.volume, '.8f'))
         elif status == 44:
             api_cancel_all_order(data.open_order)
-            api_limit_order3('sell', str(data.price), format(data.volume, '.8f'))
+            api_limit_order3('sell', data.price, format(data.volume, '.8f'))
         elif status == 77:
             api_cancel_all_order(data.open_order)
-            api_limit_order3('sell', str(data.price), format(data.volume, '.8f'))
+            api_limit_order3('sell', data.price, format(data.volume, '.8f'))
         elif status == 111:
             api_limit_order3('sell', data.price, format(data.volume, '.8f'))
         elif status == 444:
@@ -243,10 +244,12 @@ def live_trading():
 
 
 # In[14]:
-
+#run every hour at x:59
+schedule.every().hour.at(":59").do(live_trading)
 while True:
-    live_trading()
-    time.sleep(900)
+    schedule.run_pending()
+    time.sleep(60)
+
 
 
 # In[ ]:
