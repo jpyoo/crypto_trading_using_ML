@@ -84,7 +84,7 @@ def api_limit_order(order_type, want_price, volume):
                                      'price': format(float(want_price), '.2f'),
                                      'volume': volume,
                                      'close[ordertype]': 'limit',
-                                     'close[price]': format(float(want_price) * 1.005, '.2f')
+                                     'close[price]': format(float(want_price) * 1.006, '.2f')
                                     }
                                 )
     return response
@@ -201,39 +201,44 @@ def live_trading():
 
     if signal == 'Buy':
         if status == 0:
-            api_limit_order('buy', str(data.price), format(data.bank / data.price, '.8f'))
+            api_limit_order3('buy', str(data.price), format(data.bank / data.price, '.8f'))
         elif status == 44:
             api_cancel_all_order(data.open_order)
+            api_limit_order3('buy', str(data.price), format(data.bank / data.price, '.8f'))
         elif status == 77:
             api_cancel_all_order(data.open_order)
-            api_limit_order('buy', str(data.price), format(data.bank / data.price, '.8f'))
+            api_limit_order3('buy', str(data.price), format(data.bank / data.price, '.8f'))
         elif status == 111:
-            api_limit_order3('sell', data.price*1.005, format(data.volume, '.8f'))
+            api_limit_order3('buy', str(data.price), format(data.bank / data.price, '.8f'))
         elif status == 444:
             api_cancel_all_order(data.open_order)
+            api_limit_order3('buy', str(data.price), format(data.bank / data.price, '.8f'))
         elif status == 777:
             api_cancel_all_order(data.open_order)
-            api_limit_order3('sell', data.price*1.005, format(data.volume, '.8f'))
+            api_limit_order3('buy', str(data.price), format(data.bank / data.price, '.8f'))
         else: post_message(myToken,"#notify","Error6")
 
     elif signal == 'Sell':
         if status == 0:
-            pass
+            api_limit_order3('sell', str(data.price), format(data.volume, '.8f'))
         elif status == 44:
-            pass
+            api_cancel_all_order(data.open_order)
+            api_limit_order3('sell', str(data.price), format(data.volume, '.8f'))
         elif status == 77:
             api_cancel_all_order(data.open_order)
+            api_limit_order3('sell', str(data.price), format(data.volume, '.8f'))
         elif status == 111:
-            api_limit_order3('sell', data.price*1.002, format(data.volume, '.8f'))
+            api_limit_order3('sell', data.price, format(data.volume, '.8f'))
         elif status == 444:
             api_cancel_all_order(data.open_order)
             api_limit_order3('sell', data.price, format(data.volume, '.8f'))
         elif status == 777:
             api_cancel_all_order(data.open_order)
-            api_limit_order3('sell', data.price*1.002, format(data.volume, '.8f'))
+            api_limit_order3('sell', data.price, format(data.volume, '.8f'))
         else: post_message(myToken,"#notify","Error5")
 
     else: post_message(myToken,"#notify","Error7")
+    post_message(myToken,"#notify",str(signal))
     post_message(myToken,"#notify",str(status))
 
 
