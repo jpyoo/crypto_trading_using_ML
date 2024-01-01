@@ -9,14 +9,14 @@ After training the models, you can use `live_test_model.ipynb` to test with live
 ## Result
 
 ### Observed Price Moves for 10 Minutes
-![Y_Test](https://github.com/jpyoo/bitcoin-price-models/blob/main/expected.PNG?raw=true "Expected values")
+![expected](https://github.com/jpyoo/crypto_trading_using_ML/assets/58375171/e1ba59d9-673b-4233-8842-a0176a205759)
 
 ### Model Predictions for the Next 10 Minutes
 #### Model 1, 2, 3
-![Y_Test](https://github.com/jpyoo/bitcoin-price-models/blob/main/model%201%2C2%2C3.PNG?raw=true "Expected values")
+![model 1,2,3](https://github.com/jpyoo/crypto_trading_using_ML/assets/58375171/3591dffc-fb9b-4595-973b-a242aa98bba3)
 
 #### Model 4, 5
-![Y_Test](https://github.com/jpyoo/bitcoin-price-models/blob/main/model%204%2C5.PNG?raw=true "Expected values")
+![model 4,5](https://github.com/jpyoo/crypto_trading_using_ML/assets/58375171/63964cc8-3a07-4b47-9fa3-6bd76374a4ee)
 
 ### Different Time Predictions
 1. ![image](https://github.com/jpyoo/crypto_trading_using_ML/assets/58375171/1a972a15-3e29-4713-acdc-a0300f6ba35e)
